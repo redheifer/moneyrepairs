@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <title>Chat Flow Demo (Emily w/ Typing Indicator + Footer)</title>
+
+  <!-- Favicon (ensure favicon.ico is in the same folder as index.html) -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
   <style>
     /************************************************************
      * Layout: Force a full-page feel with scrolling to footer
@@ -11,7 +15,7 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100%;  /* Let the body/container fill the viewport height */
+      height: 100%;
       font-family: Arial, sans-serif;
       background: #fff; /* all-white background */
       display: flex;
@@ -24,7 +28,8 @@
       display: flex;
       flex-direction: column;
       /* Force enough space so user must scroll to see the footer */
-      min-height: 80vh;
+      /* Increase this to 90vh or 100vh if you want even more space */
+      min-height: 90vh;  
     }
 
     .chat-container {
@@ -32,7 +37,6 @@
       margin: 40px auto;   /* center horizontally */
       padding: 20px;
       border-radius: 8px;
-      /* background if you want a separate panel color */
     }
 
     /************************************************************
@@ -229,7 +233,7 @@
   <!-- Main content with forced min-height to ensure scrolling -->
   <div class="main-content">
     <div class="chat-container">
-      <h1>Unlock a $6,400 Health Subsidy To Save On Gas Rent And Groceries.</h1>
+      <h1>Unlock a $6,400 Subsidy To Save On Gas Rent And Groceries.</h1>
       
       <!-- Red warning text -->
       <div class="warning-text">
@@ -249,9 +253,8 @@
   <!-- The footer with separate-page links -->
   <footer>
     <div class="footer-links">
-      <!-- Link to your new pages -->
       <a href="privacy.html" target="_blank">Privacy Policy</a> |
-      <a href="terms.html" target="_blank">Terms & Conditions</a> |
+      <a href="terms.html" target="_blank">Terms &amp; Conditions</a> |
       <a href="contact.html" target="_blank">Contact Us</a>
     </div>
   </footer>
@@ -282,7 +285,7 @@
     }
 
     /************************************************************
-     * 2. Conversation Steps
+     * 2. Conversation Steps (Money Repairs)
      ************************************************************/
     const conversationSteps = [
       {
@@ -292,7 +295,7 @@
         autoNextStep: 1
       },
       {
-        text: "I’m Emily from Health Benefits. Want to find out if you qualify for a $6,400 Subsidy? Tap Yes! 😃",
+        text: "I’m Emily from Money Repairs. Want to find out if you qualify for a $6,400 Subsidy? Tap Yes! 😃",
         sender: "emily",
         delay: 2000,
         buttons: [
@@ -319,7 +322,7 @@
         ]
       },
       {
-        text: "🎉 Congratulations! 🎁 You qualify for a $6,400 in health subsidies to use on gas, groceries, or rent. Call the number below to get started.",
+        text: "🎉 Congratulations! 🎁 You qualify for a $6,400 in subsidies to use on gas, groceries, or rent. Call the number below to get started.",
         sender: "emily",
         delay: 2000,
         buttons: [
