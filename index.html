@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat Flow Demo (Emily w/ Typing Indicator + Footer)</title>
+  <style>
+    /************************************************************
+     * Layout: Force a full-page feel with scrolling to footer
+     ************************************************************/
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;  /* Let the body/container fill the viewport height */
+      font-family: Arial, sans-serif;
+      background: #fff; /* all-white background */
+      display: flex;
+      flex-direction: column; /* so footer sits at bottom */
+    }
+
+    /* The main content will flex:1 to push the footer down */
+    .main-content {
+      flex: 1; 
+      display: flex;
+      flex-direction: column;
+      /* Force enough space so user must scroll to see the footer */
+      min-height: 80vh;
+    }
+
+    .chat-container {
+      max-width: 600px;
+      margin: 40px auto;   /* center horizontally */
+      padding: 20px;
+      border-radius: 8px;
+      /* background if you want a separate panel color */
+    }
+
+    /************************************************************
+     * Heading + Red Warning
+     ************************************************************/
+    h1, h3 {
+      margin: 0;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .warning-text {
+      color: red;
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /************************************************************
+     * Online Status (Pulsating Dot)
+     ************************************************************/
+    .online-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .online-dot {
+      width: 10px;
+      height: 10px;
+      background: #44bd32; /* green */
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.5);
+        opacity: 0.6;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /************************************************************
+     * Chat Rows (Emily left, user right)
+     ************************************************************/
+    .message-row {
+      display: flex;
+      margin: 15px 0;
+      opacity: 0;               /* fade-in animation */
+      transform: translateY(10px);
+      animation: fadeInUp 0.3s forwards;
+    }
+    /* Emily on the left */
+    .message-row.emily {
+      justify-content: flex-start;
+    }
+    /* User on the right */
+    .message-row.user {
+      justify-content: flex-end;
+    }
+
+    /* Avatar for Emily only */
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+    /* The bubble with message text */
+    .message-bubble {
+      max-width: 60%;
+      padding: 12px 18px;
+      border-radius: 20px;
+      line-height: 1.4;
+      text-align: left;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    /* Emily’s bubble style */
+    .message-row.emily .message-bubble {
+      background: #e5e5ea;
+      color: #000;
+    }
+    /* User’s bubble style */
+    .message-row.user .message-bubble {
+      background: #007bff;
+      color: #fff;
+    }
+
+    /************************************************************
+     * Buttons
+     ************************************************************/
+    .buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      gap: 10px;
+    }
+    .btn {
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 8px 12px;
+      text-decoration: none;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    /************************************************************
+     * Typing Indicator (the 3 dots)
+     ************************************************************/
+    .typing-row {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin: 15px 0;
+    }
+    .typing-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 45px;
+      background: #e5e5ea;
+      padding: 8px 10px;
+      border-radius: 20px;
+    }
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #888;
+      border-radius: 50%;
+      animation: blink 1.4s infinite both;
+    }
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0% { transform: scale(1); }
+      20% { transform: scale(1.4); }
+      40% { transform: scale(1); }
+      100% { transform: scale(1); }
+    }
+
+    /************************************************************
+     * Footer
+     ************************************************************/
+    footer {
+      background: #f2f2f2;
+      text-align: center;
+      padding: 20px 10px;
+    }
+    footer .footer-links a {
+      color: #007bff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    footer .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    /************************************************************
+     * Keyframes
+     ************************************************************/
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main content with forced min-height to ensure scrolling -->
+  <div class="main-content">
+    <div class="chat-container">
+      <h1>Unlock a $6,400 Health Subsidy To Save On Gas Rent And Groceries.</h1>
+      
+      <!-- Red warning text -->
+      <div class="warning-text">
+        Warning: Enrollment closes on Thursday, 12/19/2024 at 8pm EST
+      </div>
+
+      <div class="online-status">
+        <div class="online-dot"></div>
+        <span>Emily is Online.</span>
+      </div>
+
+      <!-- Chat display area -->
+      <div id="chat"></div>
+    </div>
+  </div>
+
+  <!-- The footer with separate-page links -->
+  <footer>
+    <div class="footer-links">
+      <!-- Link to your new pages -->
+      <a href="privacy.html" target="_blank">Privacy Policy</a> |
+      <a href="terms.html" target="_blank">Terms & Conditions</a> |
+      <a href="contact.html" target="_blank">Contact Us</a>
+    </div>
+  </footer>
+
+  <script>
+    /************************************************************
+     * 1. IP Tracking
+     ************************************************************/
+    let userIp = null;
+    fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(data => {
+        userIp = data.ip;
+        console.log("User IP fetched:", userIp);
+      })
+      .catch(error => {
+        console.error("Error fetching IP:", error);
+      });
+
+    function trackOptIn() {
+      console.log("User clicked 'Yes' -> Opt-In. IP:", userIp);
+      // Example of how you'd POST to your own server:
+      // fetch('https://your-backend.com/track-opt-in', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ ip: userIp, action: 'OptIn' })
+      // });
+    }
+
+    /************************************************************
+     * 2. Conversation Steps
+     ************************************************************/
+    const conversationSteps = [
+      {
+        text: "Hi 👋",
+        sender: "emily",
+        delay: 1500,
+        autoNextStep: 1
+      },
+      {
+        text: "I’m Emily from Health Benefits. Want to find out if you qualify for a $6,400 Subsidy? Tap Yes! 😃",
+        sender: "emily",
+        delay: 2000,
+        buttons: [
+          { label: "Yes", nextStep: 2, onClick: trackOptIn }
+        ]
+      },
+      {
+        text: "Okay, let me ask you two quick questions. Do you make less than 5k a month? (Must select Yes to qualify)",
+        sender: "emily",
+        delay: 2000,
+        buttons: [
+          { label: "Yes", nextStep: 3 },
+          { label: "No", nextStep: "disqualified" }
+        ]
+      },
+      {
+        text: "Are you on Medicaid or Medicare? (Must select Neither to qualify)",
+        sender: "emily",
+        delay: 2000,
+        buttons: [
+          { label: "Neither", nextStep: 4 },
+          { label: "Medicaid", nextStep: "disqualified" },
+          { label: "Medicare", nextStep: "disqualified" }
+        ]
+      },
+      {
+        text: "🎉 Congratulations! 🎁 You qualify for a $6,400 in health subsidies to use on gas, groceries, or rent. Call the number below to get started.",
+        sender: "emily",
+        delay: 2000,
+        buttons: [
+          { label: "Tap to Call (844)‐606‐4942", url: "tel:8446064942" }
+        ]
+      }
+    ];
+
+    // “Disqualified” final step
+    const disqualifiedStep = {
+      text: "Unfortunately, you're not qualified for this program.",
+      sender: "emily"
+    };
+
+    /************************************************************
+     * 3. Chat Flow Logic (with typing indicator)
+     ************************************************************/
+    const chatContainer = document.getElementById("chat");
+    let currentStep = 0;
+
+    // 1) Show/hide a typing indicator for Emily
+    let typingIndicatorRow = null;
+
+    function showTypingIndicator() {
+      // Create the row & indicator if not already present
+      typingIndicatorRow = document.createElement("div");
+      typingIndicatorRow.classList.add("typing-row");
+
+      // Create an avatar for Emily
+      const avatar = document.createElement("img");
+      avatar.classList.add("typing-avatar");
+      avatar.src = "https://i.postimg.cc/Hk6VGmPg/Untitled-design-3.png";  
+      // Emily's image link
+
+      // Create the 3-dot indicator
+      const indicator = document.createElement("div");
+      indicator.classList.add("typing-indicator");
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement("div");
+        dot.classList.add("typing-dot");
+        indicator.appendChild(dot);
+      }
+
+      typingIndicatorRow.appendChild(avatar);
+      typingIndicatorRow.appendChild(indicator);
+      chatContainer.appendChild(typingIndicatorRow);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      if (typingIndicatorRow) {
+        typingIndicatorRow.remove();
+        typingIndicatorRow = null;
+      }
+    }
+
+    // 2) Show Emily’s or user’s actual message
+    function showMessage({ text, sender }) {
+      const rowDiv = document.createElement("div");
+      rowDiv.classList.add("message-row", sender);
+
+      if (sender === "emily") {
+        // Avatar
+        const avatarImg = document.createElement("img");
+        avatarImg.classList.add("avatar");
+        avatarImg.src = "https://i.postimg.cc/Hk6VGmPg/Untitled-design-3.png";
+
+        // Bubble
+        const bubble = document.createElement("div");
+        bubble.classList.add("message-bubble");
+        bubble.innerText = text;
+
+        rowDiv.appendChild(avatarImg);
+        rowDiv.appendChild(bubble);
+      } else {
+        // If it's user, no avatar, bubble on the right
+        const bubble = document.createElement("div");
+        bubble.classList.add("message-bubble");
+        bubble.innerText = text;
+        rowDiv.appendChild(bubble);
+      }
+
+      chatContainer.appendChild(rowDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // 3) Show clickable buttons (if any)
+    function showButtons(buttons) {
+      const buttonsDiv = document.createElement("div");
+      buttonsDiv.classList.add("buttons");
+      buttons.forEach(btn => {
+        const buttonEl = document.createElement("div");
+        buttonEl.classList.add("btn");
+        buttonEl.innerText = btn.label;
+        
+        buttonEl.onclick = () => {
+          // Show user’s message (on the right)
+          showMessage({ text: btn.label, sender: "user" });
+          // If there's a custom click callback (e.g. trackOptIn), run it
+          if (btn.onClick) btn.onClick();
+          // Go to next step or open a URL
+          if (btn.nextStep) {
+            nextConversationStep(btn.nextStep);
+          }
+          if (btn.url) {
+            window.location.href = btn.url;
+          }
+          // Remove the buttons
+          buttonsDiv.remove();
+        };
+        buttonsDiv.appendChild(buttonEl);
+      });
+      chatContainer.appendChild(buttonsDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // 4) Move to the specified step in the conversation
+    function nextConversationStep(stepIndex) {
+      if (stepIndex === "disqualified") {
+        // Show the "disqualified" message after a short delay (with typing)
+        showTypingIndicator();
+        setTimeout(() => {
+          hideTypingIndicator();
+          showMessage(disqualifiedStep);
+        }, 1200);
+        return;
+      }
+
+      currentStep = stepIndex;
+      const step = conversationSteps[currentStep];
+      if (!step) return; // no more steps
+
+      const { text, sender, delay, buttons, autoNextStep } = step;
+
+      // Show Emily typing if the sender is "emily"
+      if (sender === "emily") {
+        showTypingIndicator();
+      }
+      
+      setTimeout(() => {
+        // Hide typing indicator, then show the message
+        if (sender === "emily") hideTypingIndicator();
+        showMessage({ text, sender });
+
+        // If there are buttons, show them after a small delay
+        if (buttons) {
+          setTimeout(() => {
+            showButtons(buttons);
+          }, 500);
+        }
+
+        // Auto-advance if specified
+        if (typeof autoNextStep === "number") {
+          setTimeout(() => {
+            nextConversationStep(autoNextStep);
+          }, 1000);
+        }
+      }, delay || 1000);
+    }
+
+    // 5) Start the flow at step 0
+    function startConversation() {
+      nextConversationStep(0);
+    }
+
+    startConversation();
+  </script>
+</body>
+</html>
